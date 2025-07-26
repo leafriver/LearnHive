@@ -6,10 +6,28 @@
       <p class="register-tip">请填写信息完成注册</p>
       <form @submit.prevent="onSubmit">
         <div class="form-group">
-          <label for="username">手机号或邮箱</label>
-          <input id="username" v-model="username" type="text" required placeholder="请输入手机号或邮箱" :class="{ focus: usernameFocus, invalid: username && !isUsernameValid }" @focus="usernameFocus = true" @blur="usernameFocus = false" autocomplete="username" />
-          <div v-if="username && !isUsernameValid" class="input-tip">请输入有效的手机号或邮箱</div>
+          <label for="username">用户名</label>
+          <input id="username" v-model="username" type="text" required placeholder="请输入用户名" :class="{ focus: usernameFocus, invalid: username && !isUsernameValid }" @focus="usernameFocus = true" @blur="usernameFocus = false" autocomplete="username" />
+          <div v-if="username && !isUsernameValid" class="input-tip">用户名长度需3-20位，只能包含字母、数字、下划线</div>
         </div>
+        
+        <div class="form-group">
+          <label for="email">邮箱 <span class="optional">(可选)</span></label>
+          <input id="email" v-model="email" type="email" placeholder="请输入邮箱" :class="{ focus: emailFocus, invalid: email && !isEmailValid }" @focus="emailFocus = true" @blur="emailFocus = false" autocomplete="email" />
+          <div v-if="email && !isEmailValid" class="input-tip">请输入有效的邮箱地址</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">手机号 <span class="optional">(可选)</span></label>
+          <input id="phone" v-model="phone" type="tel" placeholder="请输入手机号" :class="{ focus: phoneFocus, invalid: phone && !isPhoneValid }" @focus="phoneFocus = true" @blur="phoneFocus = false" autocomplete="tel" />
+          <div v-if="phone && !isPhoneValid" class="input-tip">请输入有效的手机号</div>
+        </div>
+        
+        <div class="form-group">
+          <label for="nickname">昵称 <span class="optional">(可选)</span></label>
+          <input id="nickname" v-model="nickname" type="text" placeholder="请输入昵称" :class="{ focus: nicknameFocus }" @focus="nicknameFocus = true" @blur="nicknameFocus = false" autocomplete="nickname" />
+        </div>
+        
         <div class="form-group password-group">
           <label for="password">密码</label>
           <div class="password-wrapper">
@@ -26,8 +44,8 @@
             <span v-if="!isPasswordComplex">需包含字母和数字；</span>
           </div>
         </div>
+        
         <div class="form-group password-group">
-          <!-- 移除label，仅保留输入框和切换按钮 -->
           <div class="password-wrapper">
             <input id="confirmPassword" v-model="confirmPassword" :type="showPassword ? 'text' : 'password'" required minlength="8" maxlength="20" placeholder="请再次输入密码" :class="{ focus: confirmFocus, invalid: confirmPassword && !isConfirmValid }" @focus="confirmFocus = true" @blur="confirmFocus = false" autocomplete="new-password" />
             <button type="button" class="toggle-pw" @click="showPassword = !showPassword" tabindex="-1" :aria-label="showPassword ? '隐藏密码' : '显示密码'">
@@ -36,9 +54,15 @@
           </div>
           <div v-if="confirmPassword && !isConfirmValid" class="input-tip">两次输入的密码不一致</div>
         </div>
+        
+        <div class="contact-tip">
+          <p>💡 建议至少绑定邮箱或手机号，方便后续找回密码和接收通知</p>
+        </div>
+        
         <transition name="fade">
           <div v-if="error" class="error">{{ error }}</div>
         </transition>
+        
         <button type="submit" :disabled="!canSubmit || loading">
           <span v-if="loading" class="loading-spinner"></span>
           注册
@@ -57,19 +81,30 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const username = ref('')
+const email = ref('')
+const phone = ref('')
+const nickname = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const showPassword = ref(false)
 const error = ref('')
 const loading = ref(false)
 const usernameFocus = ref(false)
+const emailFocus = ref(false)
+const phoneFocus = ref(false)
+const nicknameFocus = ref(false)
 const passwordFocus = ref(false)
 const confirmFocus = ref(false)
 const router = useRouter()
 
-const phoneReg = /^1[3-9]\d{9}$/
+// 验证规则
+const usernameReg = /^[a-zA-Z0-9_]{3,20}$/
 const emailReg = /^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/
-const isUsernameValid = computed(() => phoneReg.test(username.value) || emailReg.test(username.value))
+const phoneReg = /^1[3-9]\d{9}$/
+
+const isUsernameValid = computed(() => usernameReg.test(username.value))
+const isEmailValid = computed(() => !email.value || emailReg.test(email.value))
+const isPhoneValid = computed(() => !phone.value || phoneReg.test(phone.value))
 
 const isPasswordLengthValid = computed(() => password.value.length >= 8 && password.value.length <= 20)
 const isPasswordComplex = computed(() => /[A-Za-z]/.test(password.value) && /\d/.test(password.value))
@@ -77,7 +112,16 @@ const isPasswordValid = computed(() => isPasswordLengthValid.value && isPassword
 
 const isConfirmValid = computed(() => password.value && confirmPassword.value && password.value === confirmPassword.value)
 
-const canSubmit = computed(() => isUsernameValid.value && isPasswordValid.value && isConfirmValid.value)
+// 至少绑定邮箱或手机号
+const hasContact = computed(() => email.value || phone.value)
+
+const canSubmit = computed(() => 
+  isUsernameValid.value && 
+  isPasswordValid.value && 
+  isConfirmValid.value && 
+  isEmailValid.value && 
+  isPhoneValid.value
+)
 
 const passwordStrength = computed(() => {
   if (!password.value) return ''
@@ -91,6 +135,7 @@ const passwordStrength = computed(() => {
   if (score === 3 || score === 4) return 'medium'
   return 'strong'
 })
+
 const strengthPercent = computed(() => {
   if (!password.value) return 0
   if (passwordStrength.value === 'weak') return 33
@@ -103,25 +148,52 @@ function onPasswordInput() {
   // 触发密码强度计算
 }
 
-function mockRegisterApi(username: string, password: string): Promise<boolean> {
-  // 模拟异步注册接口，假设用户名为"test"时注册失败
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (username === 'test') {
-        reject(new Error('用户名已存在'))
-      } else {
-        resolve(true)
+async function registerUser(userData: any): Promise<any> {
+  try {
+    const response = await fetch('http://localhost:3000/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      // 处理验证错误
+      if (result.errors && Array.isArray(result.errors)) {
+        const errorMessages = result.errors.map((error: any) => `${error.field}: ${error.message}`).join(', ');
+        throw new Error(errorMessages);
       }
-    }, 800)
-  })
+      throw new Error(result.message || '注册失败');
+    }
+
+    return result;
+  } catch (error: any) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('无法连接到服务器，请检查网络连接');
+    }
+    throw error;
+  }
 }
 
 async function onSubmit() {
   error.value = ''
   if (!canSubmit.value) return
   loading.value = true
+  
   try {
-    await mockRegisterApi(username.value, password.value)
+    const userData = {
+      username: username.value,
+      email: email.value || null,
+      phone: phone.value || null,
+      password: password.value,
+      nickname: nickname.value || null
+    }
+    
+    const result = await registerUser(userData)
+    
     // 注册成功，跳转到登录页
     router.push('/login')
   } catch (e: any) {
@@ -188,7 +260,12 @@ form {
   flex-direction: column;
   gap: 6px;
 }
-input[type="text"], input[type="password"] {
+.optional {
+  color: #999;
+  font-size: 12px;
+  font-weight: normal;
+}
+input[type="text"], input[type="password"], input[type="email"], input[type="tel"] {
   padding: 8px 38px 8px 8px;
   border: 1.5px solid #ccc;
   border-radius: 4px;
@@ -198,7 +275,7 @@ input[type="text"], input[type="password"] {
   width: 100%;
   box-sizing: border-box;
 }
-input[type="text"].focus, input[type="password"].focus {
+input[type="text"].focus, input[type="password"].focus, input[type="email"].focus, input[type="tel"].focus {
   border: 1.5px solid #2176c1;
   box-shadow: 0 0 0 2px #e6f2fb;
 }
@@ -210,6 +287,19 @@ input.invalid {
   font-size: 13px;
   margin-top: 2px;
   min-height: 18px;
+}
+.contact-tip {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 8px 0;
+}
+.contact-tip p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 13px;
+  line-height: 1.4;
 }
 .password-group {
   position: relative;

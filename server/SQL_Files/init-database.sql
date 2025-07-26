@@ -1,0 +1,37 @@
+-- 创建数据库
+CREATE DATABASE IF NOT EXISTS `learn_hive` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 使用数据库
+USE `learn_hive`;
+
+-- 创建用户表
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '用户唯一ID',
+  `username` varchar(64) NOT NULL COMMENT '用户名/登录名',
+  `email` varchar(128) DEFAULT NULL COMMENT '邮箱',
+  `phone` varchar(20) DEFAULT NULL COMMENT '手机号',
+  `password_hash` varchar(128) NOT NULL COMMENT '密码哈希',
+  `avatar_url` varchar(255) DEFAULT NULL COMMENT '头像URL',
+  `nickname` varchar(64) DEFAULT NULL COMMENT '昵称',
+  `role` varchar(32) NOT NULL DEFAULT 'user' COMMENT '角色',
+  `status` tinyint NOT NULL DEFAULT 0 COMMENT '状态：0正常/1禁用/2注销',
+  `register_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
+  `last_login_time` datetime DEFAULT NULL COMMENT '上次登录时间',
+  `intro` varchar(255) DEFAULT NULL COMMENT '个人简介',
+  `gender` tinyint DEFAULT 0 COMMENT '性别：0未知/1男/2女',
+  `birthday` date DEFAULT NULL COMMENT '生日',
+  `location` varchar(128) DEFAULT NULL COMMENT '所在地',
+  `achievement` int DEFAULT 0 COMMENT '成就点数',
+  `study_hours` int DEFAULT 0 COMMENT '累计学习时长（分钟）',
+  `is_verified` tinyint NOT NULL DEFAULT 0 COMMENT '是否已验证：0否/1是',
+  `extra` json DEFAULT NULL COMMENT '扩展信息',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_username` (`username`),
+  UNIQUE KEY `uk_email` (`email`),
+  UNIQUE KEY `uk_phone` (`phone`),
+  KEY `idx_register_time` (`register_time`),
+  KEY `idx_last_login_time` (`last_login_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+
+-- 显示创建结果
+SELECT 'Database and tables created successfully!' as message; 

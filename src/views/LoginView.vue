@@ -71,6 +71,31 @@ function mockLoginApi(username: string, password: string): Promise<boolean> {
   })
 }
 
+async function loginUser(username: string, password: string): Promise<any> {
+  try {
+    const response = await fetch('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || '登录失败');
+    }
+
+    return result;
+  } catch (error: any) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('无法连接到服务器，请检查网络连接');
+    }
+    throw error;
+  }
+}
+
 async function onSubmit() {
   error.value = ''
   if (!username.value || !password.value) {
@@ -83,7 +108,14 @@ async function onSubmit() {
   }
   loading.value = true
   try {
-    await mockLoginApi(username.value, password.value)
+    const result = await loginUser(username.value, password.value)
+    
+    // 保存用户信息到本地存储（可选）
+    if (result.data) {
+      localStorage.setItem('userInfo', JSON.stringify(result.data))
+      console.log('✅ 用户信息已保存到localStorage:', result.data)
+    }
+    
     // 登录成功，跳转首页
     router.push('/home')
   } catch (e: any) {

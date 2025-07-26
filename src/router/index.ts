@@ -29,19 +29,38 @@ const router = createRouter({
       component: RegisterView
     },
     {
+      path: '/test-user-info',
+      name: 'TestUserInfo',
+      component: () => import('../views/TestUserInfo.vue')
+    },
+    {
       path: '/explore',
       name: 'Explore',
       component: () => import('../views/ExploreView.vue')
+    },
+    {
+      path: '/course-hall',
+      name: 'CourseHall',
+      component: () => import('../views/CourseHallView.vue')
+    },
+    {
+      path: '/note-hall',
+      name: 'NoteHall',
+      component: () => import('../views/NoteHallView.vue')
     },
     {
       path: '/home',
       name: 'Home',
       component: HomeView,
       children: [
-        { path: '', redirect: '/home/profile' },
         { path: 'profile', component: () => import('../views/MainContent1.vue') },
         { path: 'courses', component: () => import('../views/MainContent2.vue') },
+        { path: 'notes', component: () => import('../views/MainContent5.vue') },
+        { path: 'favorites', component: () => import('../views/MainContent6.vue') },
         { path: 'messages', component: () => import('../views/MainContent3.vue') },
+        { path: 'calendar', component: () => import('../views/MainContent7.vue') },
+        { path: 'analytics', component: () => import('../views/MainContent8.vue') },
+        { path: 'goals', component: () => import('../views/MainContent9.vue') },
         { path: 'settings', component: () => import('../views/MainContent4.vue') },
       ]
     },
